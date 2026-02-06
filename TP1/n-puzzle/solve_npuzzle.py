@@ -52,7 +52,7 @@ def solve_dfs(open : List[Node]) -> Solution:
 
     return solve_dfs_aux(open, 13, dejaVu, initPuzzle, allMoves, size, create_goal(size))
 
-def solve_dfs_aux(open : List[Node],deep : int, dejaVu : List[State], initPuzzle : State, allMoves : List[Move], size : int, goal : State) -> Solution:
+def solve_dfs_aux(open : List[Node],deep : int, dejaVu : List[State], allMoves : List[Move], size : int, goal : State) -> Solution:
     if(deep < 0):
         return None
 
@@ -63,7 +63,7 @@ def solve_dfs_aux(open : List[Node],deep : int, dejaVu : List[State], initPuzzle
                 return Node(s,m,parent = old_node).get_path()
 
             dejaVu.append(s)
-            sol = solve_dfs_aux([Node(s,m,parent = old_node)] + open[1:], deep-1, dejaVu, initPuzzle, allMoves, size, goal)
+            sol = solve_dfs_aux([Node(s,m,parent = old_node)] + open[1:], deep-1, dejaVu, allMoves, size, goal)
             if sol != None:
                 return sol
 
@@ -83,11 +83,13 @@ def solve_astar(open : List[Node]) -> Solution:
     while(len(h) > 0):
                     
         parent = heapq.heappop(h)
+        print(len(parent.get_path()), len(dejaVu))
         for s,m in get_children(parent.get_state(), allMoves ,size):
             if s not in dejaVu:
                 if(is_goal(s,goal)):
+                    print("Path Length " ,len(Node(s,m,parent = parent).get_path()))
                     return Node(s,m,parent = parent).get_path()
-                    
+
                 dejaVu.append(s)
                 heapq.heappush(h, Node(s,m,parent=parent, heuristic=heuristic(s,goal, size)))
             
@@ -103,9 +105,6 @@ def heuristic(current_state : State, goal_state : State, size : int) -> int:
         goaly = current_state[i]%size
         total += abs(x-goalx) + abs(y-goaly)
     return total
-    
-    # Todo: implement the heuristic function
-    pass
 
 def depth_limited_search(node: Node, limit: int, goal_state: State, moves: List[Move], dimension: int) -> Solution | None:
     '''Perform a depth-limited search'''
