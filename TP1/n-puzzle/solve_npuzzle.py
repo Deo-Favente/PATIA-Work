@@ -25,25 +25,49 @@ IDDFS = 'iddfs'
 
 def solve_bfs(open : List[Node]) -> Solution:
     '''Solve the puzzle using the BFS algorithm'''
+    
     initPuzzle = open[0].get_state()
     size = int(math.sqrt(len(initPuzzle)))
     allMoves = [UP,DOWN,LEFT,RIGHT]
-
+    
     while(len(open) > 0):
         if is_solution(initPuzzle,open[0].get_path()):
             return open[0].get_path()
         
-        for s,m in get_children(open[0].get_state(),allMoves,size):
+        for s,m in get_children(open[0].get_state(), allMoves ,size):
             open.append(Node(s,m,parent = open[0]))
         
         open = open[1:]
+    return None
 
 
 def solve_dfs(open : List[Node]) -> Solution:
     '''Solve the puzzle using the DFS algorithm'''
 
-    # Todo: implement DFS algorithm
-    pass
+    initPuzzle = open[0].get_state()
+    size = int(math.sqrt(len(initPuzzle)))
+    allMoves = [UP,DOWN,LEFT,RIGHT]
+    dejaVu = [initPuzzle]
+
+    return solve_dfs_aux(open, 13, dejaVu, initPuzzle, allMoves, size, create_goal(size))
+
+def solve_dfs_aux(open : List[Node],deep : int, dejaVu : List[State], initPuzzle : State, allMoves : List[Move], size : int, goal : State) -> Solution:
+    if(deep < 0):
+        return None
+
+    old_node = open[0]
+    for s,m in get_children(old_node.get_state(),allMoves,size):
+        if s not in dejaVu:
+            if(is_goal(s,goal)):
+                return Node(s,m,parent = old_node).get_path()
+
+            dejaVu.append(s)
+            sol = solve_dfs_aux([Node(s,m,parent = old_node)] + open[1:], deep-1, dejaVu, initPuzzle, allMoves, size, goal)
+            if sol != None:
+                return sol
+
+    return None
+    
 
 def solve_astar(open : List[Node]) -> Solution:
     '''Solve the puzzle using the A* algorithm'''
