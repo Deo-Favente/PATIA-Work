@@ -50,7 +50,7 @@ def solve_dfs(open : List[Node]) -> Solution:
     allMoves = [UP,DOWN,LEFT,RIGHT]
     dejaVu = [initPuzzle]
 
-    return solve_dfs_aux(open, 13, dejaVu, initPuzzle, allMoves, size, create_goal(size))
+    return solve_dfs_aux(open, 10, dejaVu, allMoves, size, create_goal(size))
 
 def solve_dfs_aux(open : List[Node],deep : int, dejaVu : List[State], allMoves : List[Move], size : int, goal : State) -> Solution:
     if(deep < 0):
@@ -87,7 +87,6 @@ def solve_astar(open : List[Node]) -> Solution:
         for s,m in get_children(parent.get_state(), allMoves ,size):
             if s not in dejaVu:
                 if(is_goal(s,goal)):
-                    print("Path Length " ,len(Node(s,m,parent = parent).get_path()))
                     return Node(s,m,parent = parent).get_path()
 
                 dejaVu.append(s)
@@ -145,6 +144,7 @@ def main():
             duration = time.time() - start_time
             if solution:
                 print('Solution:', solution)
+                print('Path Length: ' , len(solution))
                 print('Valid solution:', is_solution(puzzle, solution))
                 print('Duration:', duration)
             else:
@@ -156,6 +156,7 @@ def main():
             duration = time.time() - start_time
             if solution:
                 print('Solution:', solution)
+                print('Path Length: ' , len(solution))
                 print('Valid solution:', is_solution(puzzle, solution))
                 print('Duration:', duration)
             else:
@@ -167,6 +168,7 @@ def main():
             duration = time.time() - start_time
             if solution:
                 print('Solution:', solution)
+                print('Path Length: ' , len(solution))
                 print('Valid solution:', is_solution(puzzle, solution))
                 print('Duration:', duration)
         elif args.algo == IDDFS:
@@ -176,11 +178,13 @@ def main():
             duration = time.time() - start_time
             if solution:
                 print('Solution:', solution)
+                print('Path Length: ' , len(solution))
                 print('Valid solution:', is_solution(puzzle, solution))
                 print('Duration:', duration)        
             else:
                 print('No solution')
     else:
+    
         print('Puzzle is already solved')
     
 if __name__ == '__main__':
