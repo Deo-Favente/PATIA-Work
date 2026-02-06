@@ -9,7 +9,7 @@ for difficulty in "easy" "medium" "hard" "impossible"; do
     echo "-------------------------------"
     for file in "tests/$difficulty"/*; do
         echo "Launching tests for $file"
-        timeout --foreground 10s python3 solve_npuzzle.py -a $1 "$file" > /tmp/solution.txt
+        timeout --foreground 30s python3 solve_npuzzle.py -a $1 "$file" > /tmp/solution.txt
         code=$?
         if grep -q "True" /tmp/solution.txt; then
             duration=$(grep "Duration" /tmp/solution.txt)

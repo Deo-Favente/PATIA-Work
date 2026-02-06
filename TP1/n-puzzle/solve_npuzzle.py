@@ -17,6 +17,7 @@ from typing import Literal, List
 import argparse
 import math
 import time
+import heapq
 
 BFS = 'bfs'
 DFS = 'dfs'
@@ -71,12 +72,37 @@ def solve_dfs_aux(open : List[Node],deep : int, dejaVu : List[State], initPuzzle
 
 def solve_astar(open : List[Node]) -> Solution:
     '''Solve the puzzle using the A* algorithm'''
-    
-    # Todo: implement A* algorithm
-    pass
+    initPuzzle = open[0].get_state()
+    size = int(math.sqrt(len(initPuzzle)))
+    allMoves = [UP,DOWN,LEFT,RIGHT]
+    dejaVu = [initPuzzle]
+    goal = create_goal(size)
+    h = [open[0]]
+    heapq.heapify(h)
 
-def heuristic(current_state : State, goal_state : State) -> int:
+    while(len(h) > 0):
+                    
+        parent = heapq.heappop(h)
+        for s,m in get_children(parent.get_state(), allMoves ,size):
+            if s not in dejaVu:
+                if(is_goal(s,goal)):
+                    return Node(s,m,parent = parent).get_path()
+                    
+                dejaVu.append(s)
+                heapq.heappush(h, Node(s,m,parent=parent, heuristic=heuristic(s,goal, size)))
+            
+    return None
+
+def heuristic(current_state : State, goal_state : State, size : int) -> int:
     '''Calculate the Manhattan distance of the puzzle'''
+    total = 0
+    for i in range(len(current_state)):
+        x = i//size
+        y = i%size
+        goalx = current_state[i]//size
+        goaly = current_state[i]%size
+        total += abs(x-goalx) + abs(y-goaly)
+    return total
     
     # Todo: implement the heuristic function
     pass
