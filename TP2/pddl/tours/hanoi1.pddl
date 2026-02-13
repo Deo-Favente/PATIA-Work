@@ -1,0 +1,15 @@
+
+(define (problem hanoi6)
+  (:domain hanoi)
+  (:objects tower1 tower2 tower3 d1 d2 d3 d4)
+  (:init 
+   (smaller d1 tower1) (smaller d2 tower1) (smaller d3 tower1) (smaller d4 tower1)
+   (smaller d1 tower2) (smaller d2 tower2) (smaller d3 tower2) (smaller d4 tower2)
+   (smaller d2 tower3) (smaller d2 tower3) (smaller d3 tower3) (smaller d4 tower3)
+   (smaller d1 d2) (smaller d1 d3) (smaller d2 d3) (smaller d1 d4)
+   (smaller d2 d4) (smaller d3 d4)
+   (clear tower2) (clear tower3) (clear d1)
+   (on d6 tower1) (on d5 d6) (on d4 d5) (on d3 d4) (on d2 d3) (on d1 d2))
+  (:goal (and (on d6 tower3) (on d5 d6) (on d4 d5) (on d3 d4) (on d2 d3)
+	      (on d1 d2)))
+  )
