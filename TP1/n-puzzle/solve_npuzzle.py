@@ -17,6 +17,7 @@ from typing import Literal, List
 import argparse
 import math
 import time
+import heapq
 
 BFS = 'bfs'
 DFS = 'dfs'
@@ -25,37 +26,86 @@ IDDFS = 'iddfs'
 
 def solve_bfs(open : List[Node]) -> Solution:
     '''Solve the puzzle using the BFS algorithm'''
+    
     initPuzzle = open[0].get_state()
     size = int(math.sqrt(len(initPuzzle)))
     allMoves = [UP,DOWN,LEFT,RIGHT]
-
+    
     while(len(open) > 0):
         if is_solution(initPuzzle,open[0].get_path()):
             return open[0].get_path()
         
-        for s,m in get_children(open[0].get_state(),allMoves,size):
+        for s,m in get_children(open[0].get_state(), allMoves ,size):
             open.append(Node(s,m,parent = open[0]))
         
         open = open[1:]
+    return None
 
 
 def solve_dfs(open : List[Node]) -> Solution:
     '''Solve the puzzle using the DFS algorithm'''
 
-    # Todo: implement DFS algorithm
-    pass
+    initPuzzle = open[0].get_state()
+    size = int(math.sqrt(len(initPuzzle)))
+    allMoves = [UP,DOWN,LEFT,RIGHT]
+    dejaVu = [initPuzzle]
+
+    return solve_dfs_aux(open[0], 10, dejaVu, allMoves, size, create_goal(size))
+
+def solve_dfs_aux(node : Node,deep : int, dejaVu : List[State], allMoves : List[Move], size : int, goal : State) -> Solution:
+    if(deep < 0):
+        return None
+
+    old_node = node
+    for s,m in get_children(old_node.get_state(),allMoves,size):
+        if s not in dejaVu:
+            if(is_goal(s,goal)):
+                return Node(s,m,parent = old_node).get_path()
+
+            dejaVu.append(s)
+            sol = solve_dfs_aux(Node(s,m,parent = old_node), deep-1, dejaVu, allMoves, size, goal)
+            if sol != None:
+                return sol
+
+    return None
+    
 
 def solve_astar(open : List[Node]) -> Solution:
     '''Solve the puzzle using the A* algorithm'''
-    
-    # Todo: implement A* algorithm
-    pass
+    initPuzzle = open[0].get_state()
+    size = int(math.sqrt(len(initPuzzle)))
+    allMoves = [UP,DOWN,LEFT,RIGHT]
+    dejaVu = [initPuzzle]
+    goal = create_goal(size)
+    h = [open[0]]
+    heapq.heapify(h)
 
-def heuristic(current_state : State, goal_state : State) -> int:
+    while(len(h) > 0):
+                    
+        parent = heapq.heappop(h)
+        print(len(parent.get_path()), len(dejaVu))
+        for s,m in get_children(parent.get_state(), allMoves ,size):
+            if s not in dejaVu:
+                if(is_goal(s,goal)):
+                    return Node(s,m,parent = parent).get_path()
+
+                dejaVu.append(s)
+                heapq.heappush(h, Node(s,m,parent=parent, heuristic=heuristic(s,goal, size)))
+            
+    return None
+
+def heuristic(current_state : State, goal_state : State, size : int) -> int:
     '''Calculate the Manhattan distance of the puzzle'''
-    
-    # Todo: implement the heuristic function
-    pass
+    total = 0
+    for i in range(len(current_state)):
+        if i == current_state[i]:
+            total -= size//4
+        x = i//size
+        y = i%size
+        goalx = current_state[i]//size
+        goaly = current_state[i]%size
+        total += abs(x-goalx) + abs(y-goaly)
+    return total
 
 def depth_limited_search(node: Node, limit: int, goal_state: State, moves: List[Move], dimension: int) -> Solution | None:
     '''Perform a depth-limited search'''
@@ -96,6 +146,7 @@ def main():
             duration = time.time() - start_time
             if solution:
                 print('Solution:', solution)
+                print('Path Length: ' , len(solution))
                 print('Valid solution:', is_solution(puzzle, solution))
                 print('Duration:', duration)
             else:
@@ -107,6 +158,7 @@ def main():
             duration = time.time() - start_time
             if solution:
                 print('Solution:', solution)
+                print('Path Length: ' , len(solution))
                 print('Valid solution:', is_solution(puzzle, solution))
                 print('Duration:', duration)
             else:
@@ -118,6 +170,7 @@ def main():
             duration = time.time() - start_time
             if solution:
                 print('Solution:', solution)
+                print('Path Length: ' , len(solution))
                 print('Valid solution:', is_solution(puzzle, solution))
                 print('Duration:', duration)
         elif args.algo == IDDFS:
@@ -127,11 +180,13 @@ def main():
             duration = time.time() - start_time
             if solution:
                 print('Solution:', solution)
+                print('Path Length: ' , len(solution))
                 print('Valid solution:', is_solution(puzzle, solution))
                 print('Duration:', duration)        
             else:
                 print('No solution')
     else:
+    
         print('Puzzle is already solved')
     
 if __name__ == '__main__':

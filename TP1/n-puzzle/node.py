@@ -9,6 +9,9 @@ class Node():
         self.heuristic = heuristic
         self.parent = parent
         
+    def __lt__(self,n) -> bool:
+        return self.heuristic <= n.heuristic
+
     def __eq__(self, n) -> bool:
         return self.state == n.state
     
