@@ -11,6 +11,6 @@
     (:action move
     :parameters (?cube - cube ?from - case ?to - case)
     :precondition (and (clear ?to) (on ?cube ?from) (next ?from ?to))
-    :effect (and (not (clear ?to)) (clear ?from) (not (on ?cube ?from)) (on ?cube ?from))
+    :effect (and (not (clear ?to)) (clear ?from) (not (on ?cube ?from)) (on ?cube ?to))
     )
 )
