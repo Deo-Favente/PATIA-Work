@@ -1,6 +1,8 @@
 #!/bin/bash
 
 solveHSP(){
+
+
 	read -p "Enter domain file [path to the file]: " domainFile
 	read -p "Enter problem file [path to the file]: " problemFile
 	read -p "Timeout [int]: " timeOut
@@ -68,7 +70,7 @@ read_options(){
 # ----------------------------------------------
 # Trap CTRL+C, CTRL+Z and quit singles
 # ----------------------------------------------
-trap '' SIGINT SIGQUIT SIGTSTP
+#trap '' #SIGINT SIGQUIT SIGTSTP
 
 # -----------------------------------
 # Main logic - infinite loop
