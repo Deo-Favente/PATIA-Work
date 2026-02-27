@@ -29,7 +29,7 @@ def solve_bfs(open : List[Node]) -> Solution:
     
     initPuzzle = open[0].get_state()
     size = int(math.sqrt(len(initPuzzle)))
-    allMoves = [UP,DOWN,LEFT,RIGHT]
+    allMoves = [UP,LEFT,DOWN,RIGHT]
     
     while(len(open) > 0):
         if is_solution(initPuzzle,open[0].get_path()):
@@ -47,34 +47,30 @@ def solve_dfs(open : List[Node]) -> Solution:
 
     initPuzzle = open[0].get_state()
     size = int(math.sqrt(len(initPuzzle)))
-    allMoves = [UP,DOWN,LEFT,RIGHT]
+    allMoves = [RIGHT,DOWN,LEFT,UP]
     dejaVu = [initPuzzle]
 
-    return solve_dfs_aux(open[0], 10, dejaVu, allMoves, size, create_goal(size))
+    while(len(open) > 0):
+        if is_solution(initPuzzle,open[0].get_path()):
+            return open[0].get_path()
 
-def solve_dfs_aux(node : Node,deep : int, dejaVu : List[State], allMoves : List[Move], size : int, goal : State) -> Solution:
-    if(deep < 0):
-        return None
-
-    old_node = node
-    for s,m in get_children(old_node.get_state(),allMoves,size):
-        if s not in dejaVu:
-            if(is_goal(s,goal)):
-                return Node(s,m,parent = old_node).get_path()
-
-            dejaVu.append(s)
-            sol = solve_dfs_aux(Node(s,m,parent = old_node), deep-1, dejaVu, allMoves, size, goal)
-            if sol != None:
-                return sol
-
+        current_node = open[0]
+        open = open[1:]
+        
+        for s,m in get_children(current_node.get_state(), allMoves ,size):
+            if s not in dejaVu:
+                dejaVu.append(s)
+                open.insert(0,Node(s,m,parent = current_node))
+        
+        
     return None
-    
+
 
 def solve_astar(open : List[Node]) -> Solution:
     '''Solve the puzzle using the A* algorithm'''
     initPuzzle = open[0].get_state()
     size = int(math.sqrt(len(initPuzzle)))
-    allMoves = [UP,DOWN,LEFT,RIGHT]
+    allMoves = [UP,LEFT,DOWN,RIGHT]
     dejaVu = [initPuzzle]
     goal = create_goal(size)
     h = [open[0]]
@@ -107,17 +103,37 @@ def heuristic(current_state : State, goal_state : State, size : int) -> int:
         total += abs(x-goalx) + abs(y-goaly)
     return total
 
-def depth_limited_search(node: Node, limit: int, goal_state: State, moves: List[Move], dimension: int) -> Solution | None:
+def depth_limited_search(node: Node, limit: int, goal_state: State, moves: List[Move], dimension: int, dejaVu: List[State]) -> Solution | None:
     '''Perform a depth-limited search'''
     
-    # Todo: implement depth-limited search
-    pass
+    if(limit <= 0):
+        return None
+
+    old_node = node
+    for s,m in get_children(old_node.get_state(),moves,dimension):
+        if s not in dejaVu:
+            dejaVu.append(s)
+            if(is_goal(s,goal_state)):
+                return Node(s,m,parent = old_node).get_path()
+
+            sol = depth_limited_search(Node(s,m,parent = old_node), limit-1, goal_state, moves, dimension, dejaVu)
+            if sol != None:
+                return sol
+
+    return None
 
 def solve_iddfs(root: Node, max_depth: int) -> Solution:
     '''Solve the puzzle using the Iterative Deepening Depth-First Search algorithm'''
     
-    # Todo: implement IDDFS algorithm
-    pass
+    size = int(math.sqrt(len(root.get_state())))
+    allMoves = [UP,LEFT,DOWN,RIGHT]
+
+    for i in range(0,max_depth):
+        dejaVu = [root.get_state()]
+        sol = depth_limited_search(root, i, create_goal(size), allMoves, size, dejaVu)
+        if sol != None:
+            return sol
+    return None
 
 def main():
     parser = argparse.ArgumentParser(description='Load an n-puzzle and solve it.')
