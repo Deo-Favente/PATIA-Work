@@ -1,3 +1,5 @@
+# Script to generate the "next" list for pddl taquin
+
 n = 10
     
 next = [(1,0),(0,1),(-1,0),(0,-1)]
