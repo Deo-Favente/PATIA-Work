@@ -1,4 +1,4 @@
-(define (problem taquin-4x4-1)
+(define (problem taquin-4x4-2)
 	(:domain taquin)
 	(:objects
 		cube1 cube2 cube3 cube4 cube5 cube6 cube7 cube8 cube9 cube10 cube11 cube12 cube13 cube14 cube15 - cube
@@ -57,25 +57,23 @@
 		(next case16 case15)
 
 		; placement des cubes sur les cases
-		(on cube4 case1)
-		(on cube1 case2)
-		(on cube2 case3)
+		(on cube1 case1)
+		(on cube2 case2)
+		(on cube6 case3)
 		(on cube3 case4)
-
-		
-
+		(on cube4 case5)
 		(on cube5 case6)
-		(on cube6 case7)
-		(on cube7 case8)
+		(on cube10 case7)
+		
 		(on cube8 case9)
 		(on cube9 case10)
-		(on cube10 case11)
-		(on cube11 case12)
+		(on cube11 case11)
+		(on cube7 case12)
 		(on cube12 case13)
 		(on cube13 case14)
 		(on cube14 case15)
 		(on cube15 case16)
-		(clear case5)
+		(clear case8)
 	)
 
 	(:goal
