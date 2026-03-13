@@ -1,6 +1,6 @@
 1
-/home/enzo/Desktop/M1/PATIA/PATIA-Work/pddl/taquin/domain.pddl 
-/home/enzo/Desktop/M1/PATIA/PATIA-Work/pddl/taquin/taquin4x4-2.pddl
+/home/enzo/Desktop/M1/PATIA/PATIA-Work/pddl/sokoban/domain.pddl 
+/home/enzo/Desktop/M1/PATIA/PATIA-Work/pddl/sokoban/sokoban2.pddl
 100
 0
 3

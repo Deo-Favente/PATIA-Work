@@ -3,7 +3,7 @@
     (:types case)
 
     (:predicates
-        (target ?c - case)
+       (target ?c - case)
         (clear ?c - case)
         (boxOn ?t - case)
         (workerOn ?c - case)
