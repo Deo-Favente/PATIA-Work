@@ -1,2 +1,3 @@
 __pycache__
 pddl/taquin/command_*
+.vscode/*
