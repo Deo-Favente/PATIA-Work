@@ -79,7 +79,6 @@ def solve_astar(open : List[Node]) -> Solution:
     while(len(h) > 0):
                     
         parent = heapq.heappop(h)
-        print(len(parent.get_path()), len(dejaVu))
         for s,m in get_children(parent.get_state(), allMoves ,size):
             if s not in dejaVu:
                 if(is_goal(s,goal)):
