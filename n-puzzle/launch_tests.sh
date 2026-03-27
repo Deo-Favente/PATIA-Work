@@ -1,5 +1,5 @@
 if [ "$#" -ne 1 ]; then
-    echo "Usage: $0 <algorithm>"
+    echo "Usage: $0 <bfs / dfs / astar /iddfs>"
     exit 1
 fi
 
