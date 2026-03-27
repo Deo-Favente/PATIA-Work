@@ -1,70 +1,32 @@
 package sokoban;
 
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Scanner;
-
-public class SokobanParser {
+public class SokobanParserOld {
 
 
-    public SokobanParser() throws IOException, ParseException {
+    public SokobanParserOld(String filename) throws IOException, ParseException {
         StringBuilder pddl = new StringBuilder();
-        Scanner in = new Scanner(System.in);
-
-        int columns = in.nextInt();
-        int lines = in.nextInt();
-        int nbBoxes = in.nextInt();
-        in.nextLine();
-
-        //read board
-        char[][] grid = new char[lines][columns];
-        for (int i = 0; i < lines; i++) {
-            String line = in.nextLine();
-            for(int j = 0; j < columns; j++) {
-                char charlu = line.charAt(j);
-                switch(charlu) {
-                    case '.':
-                        grid[i][j] = ' ';
-                        break;
-                    case '*':
-                        grid[i][j] = '.';
-                        break;
-                    default:
-                        grid[i][j] = charlu;
-                }
-            }
-        }
-
-        //set worker
-        int xWorker = in.nextInt();
-        int yWorker = in.nextInt();
-        if(grid[yWorker][xWorker] == '.'){
-            grid[yWorker][xWorker] = '+';
-        }else {
-            grid[yWorker][xWorker] = '@';
-        }
-
-        //set boxes
-        int xBox, yBox;
-        for(int i = 0; i < nbBoxes; i++) {
-            xBox = in.nextInt();
-            yBox = in.nextInt();
-            if(grid[yBox][xBox] == '.'){
-                grid[yBox][xBox] = '*';
-            }else{
-                grid[yBox][xBox] = '$';
-            }
-
-        }
 
         pddl.append("(define (problem pblm)\n");
         pddl.append("(:domain sokoban)\n");
+
+        Object o = new JSONParser().parse(new FileReader("config/" + filename));
+
+        JSONObject jsono = (JSONObject) o;
+
+        String jsonstring = (String) jsono.get("testIn");
+
+        String[] jsonlines =  jsonstring.split("\n");
+
+        int lines = jsonlines.length;
+        int columns = jsonlines[0].length();
 
         pddl.append("(:objects ");
         for (int i = 0; i < lines*columns; i++) {
@@ -79,7 +41,7 @@ public class SokobanParser {
         //Creer les proprietes des cases
         for(int i = 0; i < lines; i++){
             for(int j = 0; j < columns; j++){
-                switch(grid[i][j]){
+                switch(jsonlines[i].charAt(j)){
                     case '$':
                         pddl.append("(boxOn case"+ (i*columns +j) +") \n");
                         break;
@@ -137,9 +99,9 @@ public class SokobanParser {
 
         pddl.append(")");
 
-        try(FileWriter writer = new FileWriter("temp/problem.pddl")) {
+        try (FileWriter writer = new FileWriter("temp/problem.pddl")) {
             writer.write(pddl.toString());
-            writer.close();
+            writer.flush();
         }
     }
 
