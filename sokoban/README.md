@@ -10,7 +10,8 @@ mvn install:install-file \
    -DartifactId=pddl4j \
    -Dversion=4.0.0 \
    -Dpackaging=jar \
-   -DgeneratePom=true
+   -DgeneratePom=true \
+   -Djava.net.useSystemProxies=true
  ```  
 Work with maven: mvn clean, mvn compile, mvn test, mvn package
 
