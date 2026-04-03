@@ -37,4 +37,4 @@ java --add-opens java.base/java.lang=ALL-UNNAMED \
 ```
 Sorry ```mvn exec:java``` has still an open issue ("Directory src/main/resources/view/assets not found.")
 
-See planning solutions at http://localhost:8888/test.html
+See planning solutions at http://localhost:4200/test.html
