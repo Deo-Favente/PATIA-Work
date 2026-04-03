@@ -159,7 +159,6 @@ public class Agent {
         planner.setHeuristic(StateHeuristic.Name.MAX);
         // Sets the weight of the heuristic
         planner.setHeuristicWeight(1.2);
-
         // Solve and print the result
         try {
             Plan result = planner.solve();
