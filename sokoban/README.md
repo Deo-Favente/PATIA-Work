@@ -1,5 +1,5 @@
 # Sokoban : Interface visuelle
-Jeu : [CodinGame](https://www.codingame.com/training/hard/sokoban)
+Jeu : [CodinGame](https://www.codingame.com/training/hard/sokoban) \
 Testé sur la VM avec maven installé.
 # Installation 
 Dans ce dossier sokoban :
