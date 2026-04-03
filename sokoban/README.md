@@ -16,7 +16,7 @@ mvn install:install-file \
  ```  
 # Execution
 ````
-mvn compile -Djava.net.useSystemProxies=true
+mvn compile 
 ````
 
 ````
@@ -27,7 +27,7 @@ java --add-opens java.base/java.lang=ALL-UNNAMED \
 ````
 OU
 ````
-mvn package -Djava.net.useSystemProxies=true
+mvn package
 ````
 ```
 java --add-opens java.base/java.lang=ALL-UNNAMED \
