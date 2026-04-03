@@ -14,9 +14,10 @@ mvn install:install-file \
    -DgeneratePom=true \
    -Djava.net.useSystemProxies=true
  ```  
-# Execution
+# Utilisation
 ````
-mvn compile 
+mvn clean -Djava.net.useSystemProxies=true
+mvn compile -Djava.net.useSystemProxies=true
 ````
 
 ````
@@ -27,7 +28,7 @@ java --add-opens java.base/java.lang=ALL-UNNAMED \
 ````
 OU
 ````
-mvn package
+mvn package 
 ````
 ```
 java --add-opens java.base/java.lang=ALL-UNNAMED \
