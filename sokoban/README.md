@@ -39,5 +39,6 @@ mvn clean -Djava.net.useSystemProxies=true
 ```
 Voir les solutions : http://localhost:4200/test.html
 
-# Note importante
-Des limites de 25 secondes sur le temps d'éxecution étant imposées par la lib donnée, il arrive parfois que l'exécution de certains tests ne marchent pas (0/1 étapes). La seule solution trouvée est de réessayer ou de prendre un autre test plus rapide :)
+# Notes
+- Des limites de 25 secondes sur le temps d'éxecution étant imposées par la lib donnée, il arrive parfois que l'exécution de certains tests ne marchent pas (0/1 étapes). La seule solution trouvée est de réessayer ou de prendre un autre test plus rapide :)
+- Nous avons corrigé les problèmes liées aux dépendances en modifiant le `pom.xml` et sans rajouter "le code moche" proposé en cours.
