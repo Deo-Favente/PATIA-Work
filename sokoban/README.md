@@ -1,8 +1,6 @@
 # Play the game on [CodinGame](https://www.codingame.com/training/hard/sokoban)
-
-Maven is needed.
-
-# Installation
+Testée sur la VM avec maven installé.
+# Installation 
 Dans ce dossier sokoban :
 ```
 mvn install:install-file \
