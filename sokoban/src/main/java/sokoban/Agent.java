@@ -17,6 +17,47 @@ import java.util.logging.Logger;
 
 public class Agent {
     public static void main(String[] args) throws IOException, ParseException {
+
+        //recuperation du niveau et transformation en fichier problem pddl
+        parser();
+
+        HSP planner = new HSP();
+        // Sets the domain of the problem to solve
+        planner.setDomain("config/domain.pddl");
+        // Sets the problem to solve
+        planner.setProblem("temp/problem.pddl");
+        // Sets the timeout of the search in seconds
+        planner.setTimeout(1000);
+        // Sets log level
+        planner.setLogLevel(LogLevel.INFO);
+        // Selects the heuristic to use
+        planner.setHeuristic(StateHeuristic.Name.MAX);
+        // Sets the weight of the heuristic
+        planner.setHeuristicWeight(1.2);
+        // Solve and print the result
+        try {
+            Plan result = planner.solve();
+            for(Action a : result.actions()){
+                if(a.getName().equals("move_box_up") ||  a.getName().equals("move_worker_up")){
+                    System.out.println("U");
+                }
+                if(a.getName().equals("move_box_down") ||  a.getName().equals("move_worker_down")){
+                    System.out.println("D");
+                }
+                if(a.getName().equals("move_box_left") ||  a.getName().equals("move_worker_left")){
+                    System.out.println("L");
+                }
+                if(a.getName().equals("move_box_right") ||  a.getName().equals("move_worker_right")){
+                    System.out.println("R");
+                }
+            }
+
+        } catch (InvalidConfigurationException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void parser() throws IOException {
         StringBuilder pddl = new StringBuilder();
         Scanner in = new Scanner(System.in);
 
@@ -143,42 +184,6 @@ public class Agent {
         try(FileWriter writer = new FileWriter("temp/problem.pddl")) {
             writer.write(pddl.toString());
             writer.close();
-        }
-
-
-        HSP planner = new HSP();
-        // Sets the domain of the problem to solve
-        planner.setDomain("config/domain.pddl");
-        // Sets the problem to solve
-        planner.setProblem("temp/problem.pddl");
-        // Sets the timeout of the search in seconds
-        planner.setTimeout(1000);
-        // Sets log level
-        planner.setLogLevel(LogLevel.INFO);
-        // Selects the heuristic to use
-        planner.setHeuristic(StateHeuristic.Name.MAX);
-        // Sets the weight of the heuristic
-        planner.setHeuristicWeight(1.2);
-        // Solve and print the result
-        try {
-            Plan result = planner.solve();
-            for(Action a : result.actions()){
-                if(a.getName().equals("move_box_up") ||  a.getName().equals("move_worker_up")){
-                    System.out.println("U");
-                }
-                if(a.getName().equals("move_box_down") ||  a.getName().equals("move_worker_down")){
-                    System.out.println("D");
-                }
-                if(a.getName().equals("move_box_left") ||  a.getName().equals("move_worker_left")){
-                    System.out.println("L");
-                }
-                if(a.getName().equals("move_box_right") ||  a.getName().equals("move_worker_right")){
-                    System.out.println("R");
-                }
-            }
-
-        } catch (InvalidConfigurationException e) {
-            e.printStackTrace();
         }
     }
 
