@@ -1,6 +1,0 @@
-1
-/home/enzo/Desktop/M1/PATIA/PATIA-Work/pddl/sokoban/domain.pddl 
-/home/enzo/Desktop/M1/PATIA/PATIA-Work/pddl/sokoban/sokoban2.pddl
-100
-0
-3
