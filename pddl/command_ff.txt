@@ -1,5 +1,0 @@
-2
-/home/enzo/Desktop/M1/PATIA/PATIA-Work/pddl/hanoi/domain.pddl 
-/home/enzo/Desktop/M1/PATIA/PATIA-Work/pddl/hanoi/hanoi3.pddl
-1000
-3

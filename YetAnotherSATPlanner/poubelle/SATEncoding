@@ -1,3 +1,4 @@
+/*
 package fr.uga.pddl4j.yasp;
 
 import fr.uga.pddl4j.plan.Plan;
@@ -19,49 +20,24 @@ import java.util.HashMap;
  */
 public final class SATEncoding {
     /*
-     * A SAT problem in dimacs format is a list of int list a.k.a clauses
-     */
-    private List<List<Integer>> initList = new ArrayList<List<Integer>>();
-
-    /*
-     * Goal
-     */
-    private List<Integer> goalList = new ArrayList<Integer>();
-
-    /*
-     * Actions
-     */
-    private List<List<Integer>> actionPreconditionList = new ArrayList<List<Integer>>();
-    private List<List<Integer>> actionEffectList = new ArrayList<List<Integer>>();
-
-    /*
-     * State transistions
-     */
-    private HashMap<Integer, List<Integer>> addList = new HashMap<Integer, List<Integer>>();
-    private HashMap<Integer, List<Integer>> delList = new HashMap<Integer, List<Integer>>();
-    private List<List<Integer>> stateTransitionList = new ArrayList<List<Integer>>();
-
-    /*
-     * Action disjunctions
-     */
-    private List<List<Integer>> actionDisjunctionList = new ArrayList<List<Integer>>();
-
-    /*
      * Current DIMACS encoding of the planning domain and problem for #steps steps
      * Contains the initial state, actions and action disjunction
      * Goal is no there!
      */
     public List<List<Integer>> currentDimacs = new ArrayList<List<Integer>>();
 
+
     /*
-     * Current goal encoding
-     */
-    public List<Integer> currentGoal = new ArrayList<Integer>();
+    Problem vector
+    */
+    public List<List<Integer>> problemVector = new ArrayList<List<Integer>>();
+
 
     /*
      * Current number of steps of the SAT encoding
      */
     private int steps;
+
 
     public SATEncoding(Problem problem, int steps) {
 
@@ -73,15 +49,17 @@ public final class SATEncoding {
         // We get the initial state from the planning problem
         // State is a bit vector where the ith bit at 1 corresponds to the ith fluent being true
         final int nb_fluents = problem.getFluents().size();
-        //System.out.println(" fluents = " + nb_fluents );
-        final BitVector init = problem.getInitialState().getPositiveFluents();
-        
-        // TO BE DONE!
+        System.out.println(" fluents = " + problem.getFluents());
 
+        // 1) Fusionner le vecteur de prédicats et d'action en un seul vecteur d'entiers
+
+
+
+        // 4) encoder
         // Makes DIMACS encoding from 1 to steps
         encode(1, steps);
     }
-    
+
     /*
      * SAT encoding for next step
      */
@@ -173,8 +151,15 @@ public final class SATEncoding {
 
     private void encode(int from, int to) {
         this.currentDimacs.clear();
-        
+
         // TO BE DONE!
+        int i = from;
+        while(i < to) {
+
+
+
+            next();
+        }
 
         System.out.println("Encoding : successfully done (" + (this.currentDimacs.size()
                 + this.currentGoal.size()) + " clauses, " + to + " steps)");
