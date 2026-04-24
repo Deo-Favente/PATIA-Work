@@ -55,10 +55,8 @@ DIFFICULTIES = [
     "5x5 - 8 coups",
 ]
 
-
 MAX_TIME = 40
 TIMEOUT = 30
-
 
 def run_solver(solver, file):
     puzzle = load_puzzle("tests/" + file)
@@ -118,10 +116,10 @@ def plot_results(difficulties, results):
 
     plt.yscale('log')
     plt.ylabel("Temps (s)")
-    plt.xlabel("Difficulté")
+    plt.xlabel("Difficulté (taille du taquin - nombre de coups MAX)")
     plt.ylim(1e-6, MAX_TIME)
 
-    plt.title("Comparaison des algorithmes de résolution du taquin (échelle log)", pad=18)
+    plt.title("Comparaison des algorithmes de résolution du problème du Taquin (échelle log)", pad=18)
     plt.legend()
     plt.grid(True, which="both", linestyle="--", linewidth=0.5)
 
