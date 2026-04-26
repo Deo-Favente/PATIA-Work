@@ -78,98 +78,77 @@ public final class SATEncoding {
         nb_actions = problem.getActions().size();
         // System.out.println(" fluents = " + nb_fluents );
 
-        BitVector init = problem.getInitialState().getPositiveFluents();
         // Equation de l'initial state
         // s_0 ∧ { ∧ f/∈s_0 ¬f }
+
+        final BitVector init = problem.getInitialState().getPositiveFluents();
+
         for (int i = 0; i < nb_fluents; i++) {
-            if (init.get(i)) {
-                initList.add(List.of(pair(i + 1, 0)));
-            } else {
-                initList.add(List.of(-pair(i + 1, 0)));
-            }
+            if (init.get(i))
+                initList.add(List.of(pair(i + 1, 1))); // Le vecteur commence à 1 donc i + 1 
+            else
+                initList.add(List.of(-pair(i + 1, 1)));
         }
 
         // Equation du goal
         // { ∧ f ∈g+ f } ∧ { ∧ f ∈g− ¬f }
         BitVector goal_pos = problem.getGoal().getPositiveFluents();
-
-        for (int i = 0; i < goal_pos.size(); i++) {
-            if (goal_pos.get(i)) {
-                goalList.add(i + 1);
-            }
-        }
-
         BitVector goal_neg = problem.getGoal().getNegativeFluents();
 
-        for (int i = 0; i < goal_neg.size(); i++) {
-            if (goal_neg.get(i)) {
+        for (int i = 0; i < nb_fluents; i++) {
+            if (goal_pos.get(i))
+                goalList.add(i + 1);
+            if (goal_neg.get(i))
                 goalList.add(-(i + 1));
-            }
-        }
-
-        for (int f = 1; f <= nb_fluents; f++) { // Init des listes pour chaque fluent
-            addList.put(f, new ArrayList<>());
-            delList.put(f, new ArrayList<>());
         }
 
         // Actions
         List<Action> actions = problem.getActions();
-        for (int i = 0; i < actions.size(); i++) {
+
+        for (int i = 0; i < nb_actions; i++) {
             Action a_i = actions.get(i);
-            // Effects
+            // Equation de l'action a_i
             // a_i → {∧ precond(a_i)} ∧ {∧ effect+ (a_i)} ∧ {∧ ¬effect− (a_i)}
             // Remember that A → B ≡ ¬A ∨ B
-
-            int actionVar = nb_fluents + i + 1;
-
-            // Equation Préconditions (positives)
             BitVector precond_ai = a_i.getPrecondition().getPositiveFluents();
-            for (int j = 0; j < precond_ai.size(); j++) {
-                if (precond_ai.get(j)) {
-                    actionPreconditionList.add(
-                            List.of(-pair(actionVar, 1), pair(j + 1, 1)));
-                }
-            }
-
-            // Equation Effets positifs
             BitVector pos_ai = a_i.getUnconditionalEffect().getPositiveFluents();
-            for (int j = 0; j < pos_ai.size(); j++) {
-                if (pos_ai.get(j)) {
-                    actionEffectList.add(
-                            List.of(-pair(actionVar, 1), pair(j + 1, 1)));
-
-                    addList.get(j + 1).add(actionVar);
-                }
-            }
-
-            // Equation Effets négatifs
             BitVector neg_ai = a_i.getUnconditionalEffect().getNegativeFluents();
-            for (int j = 0; j < neg_ai.size(); j++) {
-                if (neg_ai.get(j)) {
-                    actionEffectList.add(
-                            List.of(-pair(actionVar, 1), -pair(j + 1, 1)));
 
-                    delList.get(j + 1).add(actionVar);
+            List<Integer> preconditions = new ArrayList<>();
+            List<Integer> effects = new ArrayList<>();
+
+            for (int j = 0; j < nb_fluents; j++) {
+
+                // precond(a_i)
+                if (precond_ai.get(j))
+                    preconditions.add(j + 1);
+
+                // effect+ (a_i)
+                if (pos_ai.get(j)) {
+                    effects.add(j + 1);
+                    addList.computeIfAbsent(j + 1, k -> new ArrayList<>()).add(i + nb_fluents + 1);
+                }
+
+                // effect− (a_i)
+                if (neg_ai.get(j)) {
+                    effects.add(-(j + 1));
+                    delList.computeIfAbsent(j + 1, k -> new ArrayList<>()).add(i + nb_fluents + 1);
                 }
             }
+
+            actionPreconditionList.add(preconditions);
+            actionEffectList.add(effects);
 
             // Equation Action disjunction (1 à la fois)
-            // ¬a_i ∨ ¬b_i pour toutes les suivantes
-            for (int j = i + 1; j < nb_actions; j++) {
-                int otherActionVar = nb_fluents + j + 1;
-
-                actionDisjunctionList.add(
-                        List.of(-actionVar, -otherActionVar));
+            // ¬a_i ∨ ¬b_i pour toutes les suivantes = {a_j | j > i}
+            for (int k = i + 1; k < nb_actions; k++) {
+                actionDisjunctionList.add(List.of(i + nb_fluents + 1, k + nb_fluents + 1));
             }
         }
 
-        // Makes DIMACS encoding from 1 to steps
         encode(1, steps);
     }
 
-    /*
-     * SAT encoding for next step
-     */
     public void next() {
         this.steps++;
         encode(this.steps, this.steps);
@@ -177,7 +156,7 @@ public final class SATEncoding {
 
     public String toString(final List<Integer> clause, final Problem problem) {
         final int nb_fluents = problem.getFluents().size();
-        List<Integer> dejavu = new ArrayList<Integer>();
+        List<Integer> dejavu = new ArrayList<>();
         String t = "[";
         String u = "";
         int tmp = 1;
@@ -205,7 +184,16 @@ public final class SATEncoding {
                     Fluent fluent = problem.getFluents().get(b - 1);
                     u = u + problem.toString(fluent) + "\n";
                 } else {
-                    u = u + problem.toShortString(problem.getActions().get(b - nb_fluents - 1)) + "\n";
+                    int index = b - nb_fluents - 1;
+                    if (index >= 0 && index < problem.getActions().size()) {
+                        Action a = problem.getActions().get(index);
+                        try {
+                            if (a != null) {
+                                u = u + problem.toShortString(a) + "\n";
+                            }
+                        } catch (Exception e) {
+                        }
+                    }
                 }
             }
         }
@@ -214,11 +202,12 @@ public final class SATEncoding {
 
     public Plan extractPlan(final List<Integer> solution, final Problem problem) {
         Plan plan = new SequentialPlan();
-        HashMap<Integer, Action> sequence = new HashMap<Integer, Action>();
+        HashMap<Integer, Action> sequence = new HashMap<>();
         final int nb_fluents = problem.getFluents().size();
         int[] couple;
         int bitnum;
         int step;
+
         for (Integer x : solution) {
             if (x > 0) {
                 couple = unpair(x);
@@ -228,100 +217,116 @@ public final class SATEncoding {
                 bitnum = -couple[0];
             }
             step = couple[1];
-            // This is a positive (asserted) action
-            if (bitnum > nb_fluents) {
-                final Action action = problem.getActions().get(bitnum - nb_fluents - 1);
-                sequence.put(step, action);
+
+            int actionIndex = bitnum - nb_fluents - 1;
+
+            if (bitnum > nb_fluents && actionIndex >= 0 && actionIndex < problem.getActions().size()) {
+                Action action = problem.getActions().get(actionIndex);
+                try {
+                    if (action != null) {
+                        problem.toShortString(action);
+                        sequence.put(step, action);
+                    }
+                } catch (Exception e) {
+                }
             }
         }
+
         for (int s = sequence.keySet().size(); s > 0; s--) {
-            plan.add(0, sequence.get(s));
+            if (sequence.containsKey(s)) {
+                plan.add(0, sequence.get(s));
+            }
         }
+
         return plan;
     }
 
-    // Cantor paring function generates unique numbers
     private static int pair(int num, int step) {
         return (int) (0.5 * (num + step) * (num + step + 1) + step);
     }
 
     private static int[] unpair(int z) {
-        /*
-         * Cantor unpair function is the reverse of the pairing function. It takes a
-         * single input
-         * and returns the two corespoding values.
-         */
         int t = (int) (Math.floor((Math.sqrt(8 * z + 1) - 1) / 2));
         int bitnum = t * (t + 3) / 2 - z;
         int step = z - t * (t + 1) / 2;
-        return new int[] { bitnum, step }; // Returning an array containing the two numbers
+        return new int[] { bitnum, step };
     }
 
     private void encode(int from, int to) {
         this.currentDimacs.clear();
 
-        // Listes qui sont toujours les mêmes
         if (from == 1)
             currentDimacs.addAll(initList);
 
-        currentDimacs.addAll(actionPreconditionList);
-        currentDimacs.addAll(actionEffectList);
+        for (int i = from; i <= to; i++) {
+            encodeStep(i);
+        }
 
-        currentDimacs.addAll(actionDisjunctionList);
+        currentGoal = new ArrayList<>();
+        for (Integer predicate : goalList) {
+            if (predicate > 0)
+                currentGoal.add(pair(predicate, to));
+            else
+                currentGoal.add(-pair(-predicate, to));
+        }
 
-        // Equation state transtitions
-        // ¬fi ∧ fi+1 → { V fi+1∈effect+(ai) }
-        // fi ∧ ¬fi+1 → { V fi+1∈effect− (ai) }
-        for (int f = 1; f <= addList.size(); f++) {
+        System.out.println("Encoding : successfully done (" + (this.currentDimacs.size()
+                + this.currentGoal.size()) + " clauses, " + to + " steps)");
+    }
 
-            List<Integer> adders = addList.get(f);
-            List<Integer> deleters = delList.get(f);
+    private void encodeStep(int step) {
+        for (int i = 0; i < nb_actions; i++) {
+            int pairedAction = pair(i + nb_fluents + 1, step);
 
-            for (int t = 1; t <= steps; t++) {
+            for (int prec : actionPreconditionList.get(i)) {
+                int pairedPrec = (prec > 0)
+                        ? pair(prec, step)
+                        : -pair(-prec, step);
 
-                int f_t = pair(f, t);
-                int f_t1 = (t < steps) ? pair(f, t + 1) : -1;
-
-                if (t < steps && deleters != null && !deleters.isEmpty()) {
-                    List<Integer> clauseDel = new ArrayList<>();
-                    clauseDel.add(-f_t);
-                    clauseDel.add(f_t1);
-
-                    for (Integer a : deleters) {
-                        clauseDel.add(a);
-                    }
-
-                    currentDimacs.add(clauseDel);
-                }
-
-                if (t < steps && adders != null && !adders.isEmpty()) {
-                    List<Integer> clauseAdd = new ArrayList<>();
-                    clauseAdd.add(f_t);
-                    clauseAdd.add(-f_t1);
-
-                    for (Integer a : adders) {
-                        clauseAdd.add(a);
-                    }
-
-                    currentDimacs.add(clauseAdd);
-                }
+                currentDimacs.add(List.of(-pairedAction, pairedPrec));
             }
 
-            // Mise à jour du goal selon les steps
-            this.currentGoal.clear();
-            BitVector goal_pos = new BitVector(goalList.size());
-            BitVector goal_neg = new BitVector(goalList.size());
+            for (int effect : actionEffectList.get(i)) {
+                int pairedEffect = (effect > 0)
+                        ? pair(effect, step + 1)
+                        : -pair(-effect, step + 1);
 
-            for (Integer g : goalList) {
-                if (g > 0) {
-                    currentGoal.add(pair(g, steps));
-                } else {
-                    currentGoal.add(-pair(-g, steps));
-                }
+                currentDimacs.add(List.of(-pairedAction, pairedEffect));
+            }
+        }
+
+        for (List<Integer> actionExclusionPair : actionDisjunctionList) {
+            List<Integer> pairedList = new ArrayList<>();
+
+            for (int action : actionExclusionPair) {
+                pairedList.add(-pair(action, step));
             }
 
-            System.out.println("Encoding : successfully done (" + (this.currentDimacs.size()
-                    + this.currentGoal.size()) + " clauses, " + to + " steps)");
+            currentDimacs.add(pairedList);
+        }
+
+        for (int i = 1; i <= nb_fluents; i++) {
+            List<Integer> axiom = new ArrayList<>();
+            axiom.add(-pair(i, step));
+            axiom.add(pair(i, step + 1));
+            List<Integer> negativeEffects = delList.get(i);
+            if (negativeEffects != null) {
+                for (Integer action : negativeEffects) {
+                    axiom.add(pair(action, step));
+                }
+            }
+            currentDimacs.add(axiom);
+
+            axiom = new ArrayList<>();
+            axiom.add(pair(i, step));
+            axiom.add(-pair(i, step + 1));
+            List<Integer> positiveEffects = addList.get(i);
+            if (positiveEffects != null) {
+                for (Integer action : positiveEffects) {
+                    axiom.add(pair(action, step));
+                }
+            }
+            currentDimacs.add(axiom);
         }
     }
 }
