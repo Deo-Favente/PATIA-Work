@@ -5,6 +5,7 @@ import fr.uga.pddl4j.parser.DefaultParsedProblem;
 import fr.uga.pddl4j.parser.ErrorManager;
 import fr.uga.pddl4j.parser.Message;
 import fr.uga.pddl4j.parser.Parser;
+import fr.uga.pddl4j.planners.statespace.HSP;
 import fr.uga.pddl4j.problem.DefaultProblem;
 import fr.uga.pddl4j.problem.Problem;
 import fr.uga.pddl4j.problem.State;
@@ -12,12 +13,18 @@ import fr.uga.pddl4j.planners.statespace.AbstractStateSpacePlanner;
 import fr.uga.pddl4j.planners.LogLevel;
 import fr.uga.pddl4j.plan.Plan;
 
+import org.sat4j.core.VecInt;
 import org.sat4j.minisat.SolverFactory;
+import org.sat4j.specs.ContradictionException;
 import org.sat4j.specs.IProblem;
 import org.sat4j.specs.ISolver;
+import org.sat4j.specs.IVecInt;
+import org.sat4j.specs.TimeoutException;
 
 import java.io.FileNotFoundException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * The class shows how to use PDDL4J + SAT4J libraries to create a SAT planner.
@@ -27,8 +34,7 @@ import java.util.List;
 public class YetAnotherSATPlanner extends AbstractStateSpacePlanner {
 
     /**
-     * The main method the class. The first argument must be the path to the PDDL
-     * domain description and the second
+     * The main method the class. The first argument must be the path to the PDDL domain description and the second
      * argument the path to the PDDL problem description.
      *
      * @param args the command line arguments.
@@ -48,8 +54,7 @@ public class YetAnotherSATPlanner extends AbstractStateSpacePlanner {
      * Instantiates the planning problem from a parsed problem.
      *
      * @param problem the problem to instantiate.
-     * @return the instantiated planning problem or null if the problem cannot be
-     *         instantiated.
+     * @return the instantiated planning problem or null if the problem cannot be instantiated.
      */
     @Override
     public Problem instantiate(DefaultParsedProblem problem) {
@@ -93,45 +98,48 @@ public class YetAnotherSATPlanner extends AbstractStateSpacePlanner {
             solver.setExpectedNumberOfClauses(NBCLAUSES);
             IProblem ip = solver;
 
+            addDimacsClauseToSolver(sat, solver);
+
             // Seach starts here!
             boolean doSearch = true;
 
             while (doSearch && !(steps > stepmax)) {
 
-                for (List<Integer> clause : sat.currentDimacs) {
-                    int[] dimacsClause = clause.stream().mapToInt(i -> i).toArray();
-                    solver.addClause(new org.sat4j.specs.Lit[] {}); // placeholder safe init
-                    solver.addClause(
-                            solver.unsafeAddClause(dimacsClause));
-                }
+                IVecInt goal = new VecInt(sat.currentGoal.stream().mapToInt(i -> i).toArray());
 
-                for (Integer g : sat.currentGoal) {
-                    solver.addClause(
-                            solver.unsafeAddClause(new int[] { g }));
-                }
+                try {
+                    if(ip.isSatisfiable(goal)) {
+                        System.out.println("Solution found");
+                        plan = sat.extractPlan(Arrays.stream(solver.model()).boxed().collect(Collectors.toList()), problem);
+                        System.out.println("Goal: " + sat.toString(sat.currentGoal, problem));                        
+                        doSearch = false;
+                    } else {
+                        // On avance dans les steps
+                        steps ++;
+                        sat.next();
 
-                if (ip.isSatisfiable()) {
-
-                    int[] model = ip.model();
-
-                    plan = sat.extractPlan(
-                            java.util.Arrays.stream(model)
-                                    .boxed()
-                                    .toList(),
-                            problem);
-
-                    doSearch = false;
-
-                } else {
-                    steps++;
+                        addDimacsClauseToSolver(sat,solver);
+                    }
+                } catch (TimeoutException e) {
+                    throw new RuntimeException(e);
                 }
             }
         }
         return plan;
     }
 
-    public static void main(final String[] args) {
+    private static void addDimacsClauseToSolver(SATEncoding sat, ISolver solver) {
+        for (List<Integer> clause : sat.currentDimacs){
+            int[] literals = clause.stream().mapToInt(Integer::intValue).toArray();
+            try {
+                solver.addClause(new VecInt(literals));
+            } catch (ContradictionException e) {
+                System.err.println("Contradiction in clause");
+            }
+        }
+    }
 
+    public static void main(final String[] args) {
         // Checks the number of arguments from the command line
         if (args.length != 2) {
             System.out.println("Invalid command line");
@@ -153,14 +161,14 @@ public class YetAnotherSATPlanner extends AbstractStateSpacePlanner {
                     System.out.println(m.toString());
                 }
             } else {
-
+                
                 // Creates an instance of the SAT planner
                 final YetAnotherSATPlanner planner = new YetAnotherSATPlanner();
 
                 // Prints that the domain and the problem were successfully parsed
                 System.out.print("\nparsing domain file \"" + args[0] + "\" done successfully");
                 System.out.print("\nparsing problem file \"" + args[1] + "\" done successfully\n\n");
-
+                
                 // Create a problem
                 final Problem problem = planner.instantiate(parsedProblem);
 
@@ -169,19 +177,19 @@ public class YetAnotherSATPlanner extends AbstractStateSpacePlanner {
                     System.out.println("Goal can be simplified to FALSE. No search will solve it");
                     System.exit(0);
                 } else {
-
+                    
                     Plan plan = planner.solve(problem);
-
-                    if (plan != null) {
-                        System.out.println(problem.toString(plan));
-                    } else {
-                        System.out.println("No solution found!");
-                    }
+                        
+                        if (plan != null) {
+                            System.out.println(problem.toString(plan));
+                        } else {
+                            System.out.println("No solution found!");
+                        }
                 }
             }
             // This exception could happen if the domain or the problem does not exist
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-        }
+        } 
     }
 }
