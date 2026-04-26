@@ -255,8 +255,17 @@ public final class SATEncoding {
     private void encode(int from, int to) {
         this.currentDimacs.clear();
 
+        // Etat initial seulement à la première étape
+        if (from == 1)
+            currentDimacs.addAll(initList);
+
+        for (int i = from; i <= to; i++) {
+            encode_step(i);
+        }
+
         // Mis à jour du goal
         this.currentGoal.clear();
+
         for (Integer predicate : goalList) {
             if (predicate > 0)
                 currentGoal.add(pair(predicate, to));
@@ -264,73 +273,82 @@ public final class SATEncoding {
                 currentGoal.add(-pair(-predicate, to));
         }
 
-        for (int i = from; i <= to; i++) {
-            encode_step(i);
-        }
-
         System.out.println("Encoding : successfully done (" + (this.currentDimacs.size()
                 + this.currentGoal.size()) + " clauses, " + to + " steps)");
     }
 
+    
     private void encode_step(int step) {
-        if (step == 1) {
-            for (List<Integer> clause : initList) {
-                currentDimacs.add(clause);
-            }
-        } 
-        
         for (int i = 0; i < nb_actions; i++) {
-            int pairedAction = pair(i + nb_fluents + 1, step);
+            // Actions a_i à l'étape step
+            // a_i → {∧ precond(a_i)} ∧ {∧ effect+ (a_i)} ∧ {∧ ¬effect− (a_i)}
+            // Remember that A → B ≡ ¬A ∨ B
+            int a_i = pair(i + nb_fluents + 1, step);
 
+            // Préconditions au step
             for (int prec : actionPreconditionList.get(i)) {
-                int pairedPrec = (prec > 0)
-                        ? pair(prec, step)
-                        : -pair(-prec, step);
-
-                currentDimacs.add(List.of(-pairedAction, pairedPrec));
+                currentDimacs.add(List.of(-a_i, pair(prec, step)));
             }
 
+            // Effets au step + 1
             for (int effect : actionEffectList.get(i)) {
-                int pairedEffect = (effect > 0)
-                        ? pair(effect, step + 1)
-                        : -pair(-effect, step + 1);
-
-                currentDimacs.add(List.of(-pairedAction, pairedEffect));
-            }
-        }
-
-        for (List<Integer> actionExclusionPair : actionDisjunctionList) {
-            List<Integer> pairedList = new ArrayList<>();
-
-            for (int action : actionExclusionPair) {
-                pairedList.add(-pair(action, step));
+                if (effect >= 0) { 
+                    // effect+ (a_i)
+                    currentDimacs.add(List.of(-a_i, pair(effect, step + 1)));
+                } else {
+                    // effect− (a_i)
+                    currentDimacs.add(List.of(-a_i, -pair(-effect, step + 1)));
+                }
             }
 
-            currentDimacs.add(pairedList);
         }
 
-        for (int i = 1; i <= nb_fluents; i++) {
-            List<Integer> axiom = new ArrayList<>();
-            axiom.add(-pair(i, step));
-            axiom.add(pair(i, step + 1));
-            List<Integer> negativeEffects = delList.get(i);
-            if (negativeEffects != null) {
+        // Action disjunctions
+        // ¬a_i ∨ ¬b_i pour toutes les suivantes
+        for (List<Integer> pair : actionDisjunctionList) {
+            List<Integer> temp = new ArrayList<>();
+                    
+            for (int action : pair) {
+                temp.add(-pair(action, step));
+            }
+            
+            currentDimacs.add(temp);
+        }
+        
+        // Equation state transtitions
+        // ¬fi ∧ fi+1 → { V fi+1∈effect+(ai) }
+        // fi ∧ ¬fi+1 → { V fi+1∈effect− (ai) }
+
+        for (int i = 0; i < nb_fluents; i++) {
+
+            // f(t) ∧ ¬f(t+1) → (actions -)
+            // Dont forget that A → B ≡ ¬A ∨ B
+
+            List<Integer> negAxiom = new  ArrayList<>();
+            negAxiom.add(-pair(i, step));
+            negAxiom.add(pair(i, step+1));
+
+            List<Integer> negativeEffects = delList.get(i); 
+            if(negativeEffects != null){
                 for (Integer action : negativeEffects) {
-                    axiom.add(pair(action, step));
+                    negAxiom.add(pair(action, step));
                 }
             }
-            currentDimacs.add(axiom);
+            currentDimacs.add(negAxiom);
 
-            axiom = new ArrayList<>();
-            axiom.add(pair(i, step));
-            axiom.add(-pair(i, step + 1));
+            // ¬f(t) ∧ f(t+1) → (actions +)
+            // Dont forget that A → B ≡ ¬A ∨ B
+
+            List<Integer> posAxiom = new ArrayList<>();
+            posAxiom.add(pair(i, step));
+            posAxiom.add(-pair(i, step+1));
             List<Integer> positiveEffects = addList.get(i);
-            if (positiveEffects != null) {
+            if(positiveEffects != null){
                 for (Integer action : positiveEffects) {
-                    axiom.add(pair(action, step));
+                    posAxiom.add(pair(action, step));
                 }
             }
-            currentDimacs.add(axiom);
+            currentDimacs.add(posAxiom);
         }
     }
 }
