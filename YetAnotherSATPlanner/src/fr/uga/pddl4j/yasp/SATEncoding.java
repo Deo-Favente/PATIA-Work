@@ -302,7 +302,6 @@ public final class SATEncoding {
                     currentDimacs.add(List.of(-a_i, -pair(-effect, step + 1)));
                 }
             }
-
         }
 
         // Action disjunctions
