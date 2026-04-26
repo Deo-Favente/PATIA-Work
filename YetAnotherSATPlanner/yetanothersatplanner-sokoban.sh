@@ -3,5 +3,6 @@
 1
 2
 ../pddl/sokoban/domain.pddl
-../pddl/sokoban/sokoban4.pddl
+../pddl/sokoban/sokoban2.pddl
+3
 EOF

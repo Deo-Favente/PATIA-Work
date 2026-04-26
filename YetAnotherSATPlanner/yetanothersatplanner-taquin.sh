@@ -4,4 +4,5 @@
 2
 ../pddl/taquin/domain.pddl
 ../pddl/taquin/taquin4x4-3.pddl
+3
 EOF

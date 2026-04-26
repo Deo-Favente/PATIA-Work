@@ -151,7 +151,9 @@ public final class SATEncoding {
 
     public void next() {
         this.steps++;
-        encode(this.steps, this.steps);
+        // On réencode tout depuis le début vu qu'on clear DIMACS
+        // Je sais pas pourquoi c'était à (this.steps, this.steps) avant
+        encode(1, this.steps);
     }
 
     public String toString(final List<Integer> clause, final Problem problem) {
@@ -268,9 +270,9 @@ public final class SATEncoding {
 
         for (Integer predicate : goalList) {
             if (predicate > 0)
-                currentGoal.add(pair(predicate, to));
+                currentGoal.add(pair(predicate, to + 1));
             else
-                currentGoal.add(-pair(-predicate, to));
+                currentGoal.add(-pair(-predicate, to + 1));
         }
 
         System.out.println("Encoding : successfully done (" + (this.currentDimacs.size()
@@ -325,10 +327,10 @@ public final class SATEncoding {
             // Dont forget that A → B ≡ ¬A ∨ B
 
             List<Integer> negAxiom = new  ArrayList<>();
-            negAxiom.add(-pair(i, step));
-            negAxiom.add(pair(i, step+1));
+            negAxiom.add(-pair(i + 1, step));
+            negAxiom.add(pair(i + 1, step+1));
 
-            List<Integer> negativeEffects = delList.get(i); 
+            List<Integer> negativeEffects = delList.get(i + 1); 
             if(negativeEffects != null){
                 for (Integer action : negativeEffects) {
                     negAxiom.add(pair(action, step));
@@ -340,9 +342,9 @@ public final class SATEncoding {
             // Dont forget that A → B ≡ ¬A ∨ B
 
             List<Integer> posAxiom = new ArrayList<>();
-            posAxiom.add(pair(i, step));
-            posAxiom.add(-pair(i, step+1));
-            List<Integer> positiveEffects = addList.get(i);
+            posAxiom.add(pair(i + 1, step));
+            posAxiom.add(-pair(i + 1, step+1));
+            List<Integer> positiveEffects = addList.get(i + 1);
             if(positiveEffects != null){
                 for (Integer action : positiveEffects) {
                     posAxiom.add(pair(action, step));
