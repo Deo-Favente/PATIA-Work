@@ -85,7 +85,7 @@ public final class SATEncoding {
 
         for (int i = 0; i < nb_fluents; i++) {
             if (init.get(i))
-                initList.add(List.of(pair(i + 1, 1))); // Le vecteur commence à 1 donc i + 1 
+                initList.add(List.of(pair(i + 1, 1))); // Le vecteur commence à 1 donc i + 1
             else
                 initList.add(List.of(-pair(i + 1, 1)));
         }
@@ -188,7 +188,7 @@ public final class SATEncoding {
                     if (index >= 0 && index < problem.getActions().size()) {
                         Action a = problem.getActions().get(index);
                         try {
-                            if (a != null) {
+                            if (a != null) { // Pareil ici on peut avoir des null
                                 u = u + problem.toShortString(a) + "\n";
                             }
                         } catch (Exception e) {
@@ -223,7 +223,7 @@ public final class SATEncoding {
             if (bitnum > nb_fluents && actionIndex >= 0 && actionIndex < problem.getActions().size()) {
                 Action action = problem.getActions().get(actionIndex);
                 try {
-                    if (action != null) {
+                    if (action != null) { // Check rajouté sinon on peut avoir des actions nulles dans le plan extrait
                         problem.toShortString(action);
                         sequence.put(step, action);
                     }
@@ -255,14 +255,8 @@ public final class SATEncoding {
     private void encode(int from, int to) {
         this.currentDimacs.clear();
 
-        if (from == 1)
-            currentDimacs.addAll(initList);
-
-        for (int i = from; i <= to; i++) {
-            encodeStep(i);
-        }
-
-        currentGoal = new ArrayList<>();
+        // Mis à jour du goal
+        this.currentGoal.clear();
         for (Integer predicate : goalList) {
             if (predicate > 0)
                 currentGoal.add(pair(predicate, to));
@@ -270,11 +264,21 @@ public final class SATEncoding {
                 currentGoal.add(-pair(-predicate, to));
         }
 
+        for (int i = from; i <= to; i++) {
+            encode_step(i);
+        }
+
         System.out.println("Encoding : successfully done (" + (this.currentDimacs.size()
                 + this.currentGoal.size()) + " clauses, " + to + " steps)");
     }
 
-    private void encodeStep(int step) {
+    private void encode_step(int step) {
+        if (step == 1) {
+            for (List<Integer> clause : initList) {
+                currentDimacs.add(clause);
+            }
+        } 
+        
         for (int i = 0; i < nb_actions; i++) {
             int pairedAction = pair(i + nb_fluents + 1, step);
 
